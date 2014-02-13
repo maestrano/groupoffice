@@ -116,6 +116,12 @@ class GO_Core_Controller_Auth extends GO_Base_Controller_AbstractController {
 	protected function actionLogout() {
 
 		GO::session()->logout();
+    // Hook:Maestrano
+    $maestrano = MaestranoService::getInstance();
+    if ($maestrano->isSsoEnabled()) {
+      header("Location: " . $maestrano->getSsoLogoutUrl());
+      exit();
+    }
 
 		if (isset($_COOKIE['GO_FULLSCREEN']) && $_COOKIE['GO_FULLSCREEN'] == '1') {
 			?>
