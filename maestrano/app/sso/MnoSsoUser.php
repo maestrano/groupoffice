@@ -108,7 +108,7 @@ class MnoSsoUser extends MnoSsoBaseUser
    */
   protected function buildPermissionGroupList()
   {
-    $group_list = ['Everyone','Internal'];
+    $group_list = Array('Everyone','Internal');
     $admin_role = false;
       
     if ($this->app_owner) {
