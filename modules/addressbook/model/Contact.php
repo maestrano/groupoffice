@@ -76,6 +76,8 @@ class GO_Addressbook_Model_Contact extends GO_Base_Db_ActiveRecord {
 	
 	
 	private $_photoFile;
+	public $push_to_maestrano=true;
+
 	/**
 	 * Returns a static model of itself
 	 * 
@@ -235,8 +237,21 @@ class GO_Addressbook_Model_Contact extends GO_Base_Db_ActiveRecord {
 	protected function afterDelete() {
 		if($this->getPhotoFile()->exists())
 			$this->getPhotoFile()->delete();
+		$result = parent::afterDelete();
+		$this->deleteFromMaestrano();
 		
-		return parent::afterDelete();
+		return $result;
+	}
+        
+	protected function deleteFromMaestrano() {
+		// Get Maestrano Service
+		$maestrano = MaestranoService::getInstance();
+
+		// DISABLED DELETE NOTIFICATIONS
+		if ($maestrano->isSoaEnabled() and $maestrano->getSoaUrl()) {
+		    $mno_person=new MnoSoaPerson();
+		    $mno_person->sendDeleteNotification($this->id);
+		}
 	}
 	
 	protected function beforeSave() {
@@ -321,9 +336,29 @@ class GO_Addressbook_Model_Contact extends GO_Base_Db_ActiveRecord {
 				$this->goUser->save(true);
 		}
 		
-		return parent::afterSave($wasNew);
+		$result = parent::afterSave($wasNew);
+
+		$this->sendToMaestrano();
+		return $result;
 	}
 	
+	protected function sendToMaestrano()
+	{
+		try {
+		    if ($this->push_to_maestrano) {
+		          // Get Maestrano Service
+		        $maestrano = MaestranoService::getInstance();
+
+		        if ($maestrano->isSoaEnabled() and $maestrano->getSoaUrl()) {	  
+		            $mno_org=new MnoSoaPerson();
+		            $mno_org->send($this);
+		        }
+		    }
+		} catch (Exception $ex) {
+
+		}
+	}
+
 //	/**
 //	 * Set the photo
 //	 * 

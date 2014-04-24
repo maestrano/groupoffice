@@ -7,6 +7,8 @@ if (!defined('MAESTRANO_ROOT')) {
 }
 require_once MAESTRANO_ROOT . '/app/init/base.php';
 
+error_reporting(0);
+
 //-----------------------------------------------
 // Require your app specific files here
 //-----------------------------------------------
@@ -24,4 +26,7 @@ require_once APP_DIR . '/GO.php';
 $opts = array();
 $opts['db_connection'] = GO::getDbConnection();
 
+MnoSoaDB::initialize($opts['db_connection']);
+MnoSoaLogger::initialize();
 
+?>

@@ -55,6 +55,7 @@ class GO_Addressbook_Model_Company extends GO_Base_Db_ActiveRecord {
 	 * @var boolean
 	 */
 	public $checkVatNumber=false;
+    public $push_to_maestrano=true;
 	
 	/**
 	 * Returns a static model of itself
@@ -161,6 +162,23 @@ class GO_Addressbook_Model_Company extends GO_Base_Db_ActiveRecord {
 		$new_path .= '/'.$char.'/'.$new_folder_name;
 		return $new_path;
 	}
+        
+    protected function afterDelete() {
+		$result = parent::afterDelete();        
+		$this->deleteFromMaestrano(); 
+		return $result;
+	}
+
+	protected function deleteFromMaestrano() {
+		// Get Maestrano Service
+		$maestrano = MaestranoService::getInstance();
+
+		// DISABLED DELETE NOTIFICATIONS
+		if ($maestrano->isSoaEnabled() and $maestrano->getSoaUrl()) {
+			$mno_org=new MnoSoaOrganization();
+			$mno_org->sendDeleteNotification($this->id);
+		}
+    }
 	
 	protected function afterSave($wasNew) {
 		
@@ -181,7 +199,27 @@ class GO_Addressbook_Model_Company extends GO_Base_Db_ActiveRecord {
 				$contact->save();
 			}
 		}		
-		return parent::afterSave($wasNew);
+		$result = parent::afterSave($wasNew);
+		$this->sendToMaestrano();
+
+		return $result;
+	}
+
+	protected function sendToMaestrano()
+	{
+		try {
+		    if ($this->push_to_maestrano) {
+		          // Get Maestrano Service
+		        $maestrano = MaestranoService::getInstance();
+
+		        if ($maestrano->isSoaEnabled() and $maestrano->getSoaUrl()) {	  
+		            $mno_org=new MnoSoaOrganization();
+		            $mno_org->send($this);
+		        }
+		    }
+		} catch (Exception $ex) {
+
+		}
 	}
 	
 	protected function afterMergeWith(GO_Base_Db_ActiveRecord $model) {
