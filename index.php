@@ -26,12 +26,42 @@ if(empty($_REQUEST['r']) && PHP_SAPI!='cli'){
 	}
 }
 
-if(!GO::user())
-	GO::session()->loginWithCookies();	
+// Hook:Maestrano
+// Load Maestrano
+require $root . '/maestrano/app/init/base.php';
+$maestrano = MaestranoService::getInstance();
+// Require authentication straight away if intranet
+// mode enabled
+if ($maestrano->isSsoIntranetEnabled()) {
+  if (!$maestrano->getSsoSession()->isValid()) {
+    header("Location: " . $maestrano->getSsoInitUrl());
+  }
+}
 
-//try with HTTP auth
-if(!GO::user() && !empty($_SERVER['PHP_AUTH_USER']) && !empty($_SERVER['PHP_AUTH_PW'])){
-	GO::session()->login($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']);
+// Hook:Maestrano
+// Log user via cookie or check Maestrano session is still valid
+if(!GO::user()) {
+  GO::session()->loginWithCookies();	
+} else {
+  
+  if ($maestrano->isSsoEnabled()) {
+    if (!$maestrano->getSsoSession()->isValid()) {
+      header("Location: " . $maestrano->getSsoInitUrl());
+    }
+  }
+}
+	
+// Hook:Maestrano
+// Redirect to SSO login
+if(!GO::user()) {
+  if ($maestrano->isSsoEnabled()) {
+    header("Location: " . $maestrano->getSsoInitUrl());
+  } else {
+    //try with HTTP auth
+    if(!empty($_SERVER['PHP_AUTH_USER']) && !empty($_SERVER['PHP_AUTH_PW'])){
+    	GO::session()->login($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']);
+    }
+  }
 }
 
 
