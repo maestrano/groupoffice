@@ -345,7 +345,7 @@ class GO_Addressbook_Model_Contact extends GO_Base_Db_ActiveRecord {
 	protected function sendToMaestrano()
 	{
 		try {
-		    if ($this->push_to_maestrano) {
+		    if ($this->push_to_maestrano && !$this->goUser()) {
 		          // Get Maestrano Service
 		        $maestrano = MaestranoService::getInstance();
 
