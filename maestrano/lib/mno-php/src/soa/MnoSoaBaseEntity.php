@@ -11,8 +11,8 @@ class MnoSoaBaseEntity extends MnoSoaBaseHelper
     const STATUS_DELETED_ID = 4;
     
     protected $_local_entity;
-    protected static $_local_entity_name;
-    protected static $_mno_entity_name;
+    protected $_local_entity_name;
+    protected $_mno_entity_name;
     
     protected $_create_rest_entity_name;
     protected $_create_http_operation;
@@ -55,12 +55,12 @@ class MnoSoaBaseEntity extends MnoSoaBaseHelper
         throw new Exception('Function '. __FUNCTION__ . ' must be overriden in Entity class!');
     }
     
-    public static function getLocalEntityByLocalIdentifier($local_id)
+    public function getLocalEntityByLocalIdentifier($local_id)
     {
         throw new Exception('Function '. __FUNCTION__ . ' must be overriden in Entity class!');
     }
     
-    public static function createLocalEntity()
+    public function createLocalEntity()
     {
         throw new Exception('Function '. __FUNCTION__ . ' must be overriden in Entity class!');
     }
@@ -79,14 +79,14 @@ class MnoSoaBaseEntity extends MnoSoaBaseHelper
      *                       COMMON INHERITED METHODS                         *
      **************************************************************************/
     
-    public static function getLocalEntityName()
+    public function getLocalEntityName()
     {
-        return static::$_local_entity_name;
+        return $this->_local_entity_name;
     }
     
-    protected static function getMnoEntityName()
+    protected function getMnoEntityName()
     {
-        return static::$_mno_entity_name;
+        return $this->_mno_entity_name;
     }
     
     protected function pushId() 
@@ -97,7 +97,7 @@ class MnoSoaBaseEntity extends MnoSoaBaseHelper
             return;
         }
         
-	$mno_id = MnoSoaDB::getMnoIdByLocalId($local_id, static::getLocalEntityName(), static::getMnoEntityName());
+	$mno_id = MnoSoaDB::getMnoIdByLocalId($local_id, $this->getLocalEntityName(), $this->getMnoEntityName());
 
 	if (!$this->isValidIdentifier($mno_id)) {
             return;
@@ -118,15 +118,15 @@ class MnoSoaBaseEntity extends MnoSoaBaseHelper
     protected function pullId() 
     {
 	if (!empty($this->_id)) {
-            $local_id = MnoSoaDB::getLocalIdByMnoId($this->_id, static::getMnoEntityName(), static::getLocalEntityName());
+            $local_id = MnoSoaDB::getLocalIdByMnoId($this->_id, $this->getMnoEntityName(), $this->getLocalEntityName());
 	    
 	    if ($this->isValidIdentifier($local_id)) {
-                $this->_local_entity = static::getLocalEntityByLocalIdentifier($local_id->_id);
+                $this->_local_entity = $this->getLocalEntityByLocalIdentifier($local_id->_id);
 		return constant('MnoSoaBaseEntity::STATUS_EXISTING_ID');
 	    } else if ($this->isDeletedIdentifier($local_id)) {
                 return constant('MnoSoaBaseEntity::STATUS_DELETED_ID');
             } else {
-                $this->_local_entity = static::createLocalEntity();
+                $this->_local_entity = $this->createLocalEntity();
 		return constant('MnoSoaBaseEntity::STATUS_NEW_ID');
 	    }
 	}
@@ -165,7 +165,7 @@ class MnoSoaBaseEntity extends MnoSoaBaseHelper
         $mno_response_has_id = !empty($mno_response_id);
 	
         if ($mno_had_no_id && $local_entity_now_has_id && $mno_response_has_id) {
-            MnoSoaDB::addIdMapEntry($local_entity_id, static::getLocalEntityName(), $mno_response_id, static::getMnoEntityName());
+            MnoSoaDB::addIdMapEntry($local_entity_id, $this->getLocalEntityName(), $mno_response_id, $this->getMnoEntityName());
         }
         
         MnoSoaLogger::debug(__FUNCTION__ . " end");

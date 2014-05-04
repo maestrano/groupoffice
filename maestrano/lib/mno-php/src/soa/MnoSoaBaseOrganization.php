@@ -5,7 +5,7 @@
  */
 class MnoSoaBaseOrganization extends MnoSoaBaseEntity
 {
-    protected static $_mno_entity_name = "ORGANIZATIONS";
+    protected $_mno_entity_name = "ORGANIZATIONS";
     protected $_create_rest_entity_name = "organizations";
     protected $_create_http_operation = "POST";
     protected $_update_rest_entity_name = "organizations";
@@ -145,12 +145,12 @@ class MnoSoaBaseOrganization extends MnoSoaBaseEntity
         throw new Exception('Function '. __FUNCTION__ . ' must be overriden in MnoOrganization class!');
     }
     
-    public static function getLocalEntityByLocalIdentifier($local_id)
+    public function getLocalEntityByLocalIdentifier($local_id)
     {
         throw new Exception('Function '. __FUNCTION__ . ' must be overriden in MnoOrganization class!');
     }
     
-    public static function createLocalEntity()
+    public function createLocalEntity()
     {
         throw new Exception('Function '. __FUNCTION__ . ' must be overriden in MnoOrganization class!');
     }
@@ -273,7 +273,7 @@ class MnoSoaBaseOrganization extends MnoSoaBaseEntity
         $mno_entity_id = $this->_id;
 
         if ($is_new_id && !empty($local_entity_id) && !empty($mno_entity_id)) {
-            MnoSoaDB::addIdMapEntry($local_entity_id, static::getLocalEntityName(), $mno_entity_id, static::getMnoEntityName());
+            MnoSoaDB::addIdMapEntry($local_entity_id, $this->getLocalEntityName(), $mno_entity_id, $this->getMnoEntityName());
         }
         MnoSoaLogger::debug(__FUNCTION__ . " end");
         

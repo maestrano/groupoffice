@@ -5,7 +5,7 @@
  */
 class MnoSoaBasePerson extends MnoSoaBaseEntity
 {
-    protected static $_mno_entity_name = "PERSONS";
+    protected $_mno_entity_name = "PERSONS";
     protected $_create_rest_entity_name = "persons";
     protected $_create_http_operation = "POST";
     protected $_update_rest_entity_name = "persons";
@@ -106,11 +106,11 @@ class MnoSoaBasePerson extends MnoSoaBaseEntity
         throw new Exception('Function '. __FUNCTION__ . ' must be overriden in MnoPerson class!');
     }
     
-    public static function getLocalEntityByLocalIdentifier($local_id) {
+    public function getLocalEntityByLocalIdentifier($local_id) {
         throw new Exception('Function '. __FUNCTION__ . ' must be overriden in MnoPerson class!');
     }
     
-    public static function createLocalEntity() {
+    public function createLocalEntity() {
         throw new Exception('Function '. __FUNCTION__ . ' must be overriden in MnoPerson class!');
     }
     
@@ -127,24 +127,26 @@ class MnoSoaBasePerson extends MnoSoaBaseEntity
      **************************************************************************/
     
     protected function getMnoOrganizationByMap($local_org_id) {
-        $organization_class = static::getRelatedOrganizationClass();
-        return MnoSoaDB::getMnoIdByLocalId($local_org_id, $organization_class::getLocalEntityName(), $organization_class::getMnoEntityName());
+        $organization_class = $this->getRelatedOrganizationClass();
+        $organization_instance = new $organization_class;
+        return MnoSoaDB::getMnoIdByLocalId($local_org_id, $organization_instance->getLocalEntityName(), $organization_instance->getMnoEntityName());
     }
     
-    public static function getRelatedOrganizationClass() {
-        return static::$_related_organization_class;
+    public function getRelatedOrganizationClass() {
+        return $this->_related_organization_class;
     }
     
     protected function pushRole() {    
         $local_org_id = $this->getLocalOrganizationIdentifier();
-        $org_class_name = static::getRelatedOrganizationClass();
+        $org_class_name = $this->getRelatedOrganizationClass();
+        $organization = new $org_class_name;
         
         if (empty($local_org_id)) {
             $this->_role = null;
             return;
         }
         
-        $mno_org_id = MnoSoaDB::getMnoIdByLocalId($local_org_id, $org_class_name::getLocalEntityName(), $org_class_name::getMnoEntityName());
+        $mno_org_id = MnoSoaDB::getMnoIdByLocalId($local_org_id, $organization->getLocalEntityName(), $organization->getMnoEntityName());
 
         if ($this->isValidIdentifier($mno_org_id)) {    
             MnoSoaLogger::debug("is valid identifier");
@@ -155,15 +157,14 @@ class MnoSoaBasePerson extends MnoSoaBaseEntity
             return;
         } else {
             MnoSoaLogger::debug("before contacts find by id=" . json_encode($local_org_id));
-            $org_contact = $org_class_name::getLocalEntityByLocalIdentifier($local_org_id);
+            $org_contact = $organization->getLocalEntityByLocalIdentifier($local_org_id);
             MnoSoaLogger::debug("after contacts find by id=" . json_encode($local_org_id));
-
-            $organization = new $org_class_name;		
+            
             $status = $organization->send($org_contact);
             MnoSoaLogger::debug("after mno soa organization send");
 
             if ($status) {
-                $mno_org_id = MnoSoaDB::getMnoIdByLocalId($local_org_id, $org_class_name::getLocalEntityName(), $org_class_name::getMnoEntityName());
+                $mno_org_id = MnoSoaDB::getMnoIdByLocalId($local_org_id, $organization->getLocalEntityName(), $organization->getMnoEntityName());
 
                 if ($this->isValidIdentifier($mno_org_id)) {
                     $this->_role->organization->id = $mno_org_id->_id;
@@ -179,11 +180,12 @@ class MnoSoaBasePerson extends MnoSoaBaseEntity
             return;
         }
         
-        $org_class_name = static::getRelatedOrganizationClass();
+        $org_class_name = $this->getRelatedOrganizationClass();
+        $organization = new $org_class_name();
         if (empty($org_class_name)) {
             return;
         }
-        $local_org_id = MnoSoaDB::getLocalIdByMnoId($mno_org_id, $org_class_name::getLocalEntityName(), $org_class_name::getMnoEntityName());
+        $local_org_id = MnoSoaDB::getLocalIdByMnoId($mno_org_id, $organization->getLocalEntityName(), $organization->getMnoEntityName());
         
         if ($this->isValidIdentifier($local_org_id)) {
             $this->setLocalOrganizationIdentifier($local_org_id);
@@ -192,10 +194,9 @@ class MnoSoaBasePerson extends MnoSoaBaseEntity
             // do not update
             return;
         } else {
-            $notification->entity = $org_class_name::getMnoEntityName();
+            $notification->entity = $organization->getMnoEntityName();
             $notification->id = $this->_role->organization->id;
             
-            $organization = new $org_class_name();		
             $status = $organization->receiveNotification($notification);
             
             if ($status) {
@@ -312,7 +313,7 @@ class MnoSoaBasePerson extends MnoSoaBaseEntity
         $mno_entity_id = $this->_id;
 
         if ($is_new_id && !empty($local_entity_id) && !empty($mno_entity_id)) {
-            MnoSoaDB::addIdMapEntry($local_entity_id, static::getLocalEntityName(), $mno_entity_id, static::getMnoEntityName());
+            MnoSoaDB::addIdMapEntry($local_entity_id, $this->getLocalEntityName(), $mno_entity_id, $this->getMnoEntityName());
         }
         MnoSoaLogger::debug(__FUNCTION__ . " end persist");
         

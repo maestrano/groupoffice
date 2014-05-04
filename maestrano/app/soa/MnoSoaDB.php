@@ -19,12 +19,14 @@ class MnoSoaDB extends MnoSoaBaseDB {
     
     public static function addIdMapEntry($local_id, $local_entity_name, $mno_id, $mno_entity_name) {	
         MnoSoaLogger::debug(__CLASS__ . ' ' . __FUNCTION__ . " start");
+        $db = GO::getDbConnection();
 	$query = "INSERT INTO mno_id_map (mno_entity_guid, mno_entity_name, app_entity_id, app_entity_name, db_timestamp) VALUES "
-                            ."(". self::$_db->quote($mno_id).", ".self::$_db->quote(strtoupper($mno_entity_name)).", ".
-                            self::$_db->quote($local_id).", ".self::$_db->quote(strtoupper($local_entity_name)).", UTC_TIMESTAMP)";
+                            ."(". $db->quote($mno_id).", ".$db->quote(strtoupper($mno_entity_name)).", ".
+                            $db->quote($local_id).", ".$db->quote(strtoupper($local_entity_name)).", UTC_TIMESTAMP)";
         
-        self::$_db->query($query);
-        $id = self::$_db->lastInsertId();
+        
+        $db->query($query);
+        $id = $db->lastInsertId();
         
         MnoSoaLogger::debug("addIdMapEntry query = ".$query);
         
@@ -46,13 +48,14 @@ class MnoSoaDB extends MnoSoaBaseDB {
     {
         MnoSoaLogger::debug(__CLASS__ . ' ' . __FUNCTION__ . " start");
         $mno_entity = null;
+        $db = GO::getDbConnection();
         
 	// Fetch record
 	$query = "SELECT mno_entity_guid, mno_entity_name, deleted_flag from mno_id_map WHERE "
-                . "app_entity_id=".self::$_db->quote($local_id)." and app_entity_name=".self::$_db->quote(strtoupper($local_entity_name)).
-                " and mno_entity_name=".self::$_db->quote(strtoupper($mno_entity_name));
+                . "app_entity_id=".$db->quote($local_id)." and app_entity_name=".$db->quote(strtoupper($local_entity_name)).
+                " and mno_entity_name=".$db->quote(strtoupper($mno_entity_name));
         
-        $result = self::$_db->query($query);
+        $result = $db->query($query);
         
 	// Return id value
 	if ($row = $result->fetch()) {
@@ -77,13 +80,14 @@ class MnoSoaDB extends MnoSoaBaseDB {
     {
         MnoSoaLogger::debug(__CLASS__ . ' ' . __FUNCTION__ . " start");
 	$local_entity = null;
+        $db = GO::getDbConnection();
         
 	// Fetch record
-	$query = "SELECT app_entity_id, app_entity_name, deleted_flag from mno_id_map where mno_entity_guid=".self::$_db->quote($mno_id)
-                ." and mno_entity_name=".self::$_db->quote(strtoupper($mno_entity_name))
-                ." and app_entity_name=".self::$_db->quote(strtoupper($local_entity_name));
+	$query = "SELECT app_entity_id, app_entity_name, deleted_flag from mno_id_map where mno_entity_guid=".$db->quote($mno_id)
+                ." and mno_entity_name=".$db->quote(strtoupper($mno_entity_name))
+                ." and app_entity_name=".$db->quote(strtoupper($local_entity_name));
 
-        $result = self::$_db->query($query);
+        $result = $db->query($query);
         
 	// Return id value
 	if ($row = $result->fetch()) {
@@ -107,11 +111,12 @@ class MnoSoaDB extends MnoSoaBaseDB {
     public static function deleteIdMapEntry($local_id, $local_entity_name) 
     {
         MnoSoaLogger::debug(__CLASS__ . ' ' . __FUNCTION__ . " start");
+        $db = GO::getDbConnection();
         // Logically delete record
-        $query = "UPDATE mno_id_map SET deleted_flag=1 WHERE app_entity_id=".self::$_db->quote($local_id)
-                ." and app_entity_name=".self::$_db->quote(strtoupper($local_entity_name));
+        $query = "UPDATE mno_id_map SET deleted_flag=1 WHERE app_entity_id=".$db->quote($local_id)
+                ." and app_entity_name=".$db->quote(strtoupper($local_entity_name));
         
-        self::$_db->query($query);
+        $db->query($query);
         
         MnoSoaLogger::debug("deleteIdMapEntry query = ".$query);
         
