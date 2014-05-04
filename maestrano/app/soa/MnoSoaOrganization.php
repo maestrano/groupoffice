@@ -5,7 +5,7 @@
  */
 class MnoSoaOrganization extends MnoSoaBaseOrganization
 {
-    protected static $_local_entity_name = "COMPANY";
+    protected $_local_entity_name = "COMPANY";
     
     protected function pushName() {
         $this->_name = $this->push_set_or_delete_value($this->_local_entity->name);
@@ -149,11 +149,11 @@ class MnoSoaOrganization extends MnoSoaBaseOrganization
         return $this->_local_entity->id;
     }
     
-    public static function getLocalEntityByLocalIdentifier($local_id) {
+    public function getLocalEntityByLocalIdentifier($local_id) {
         return GO_Addressbook_Model_Company::model()->findSingleByAttribute('id', $local_id);
     }
     
-    public static function createLocalEntity() {
+    public function createLocalEntity() {
         return new GO_Addressbook_Model_Company();
     }
     

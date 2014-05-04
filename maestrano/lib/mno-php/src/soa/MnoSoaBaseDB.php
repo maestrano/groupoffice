@@ -4,11 +4,9 @@
  * Mno DB Map Interface
  */
 class MnoSoaBaseDB {
-    protected static $_db;
     
     public static function initialize($db=null)
     {
-        static::$_db = $db;
         error_log("initialized");
     }
 
