@@ -30,7 +30,14 @@ function printHead()
 
 function printFoot()
 {
-	echo '</div></form></body></html>';
+	$footer = '</div></form>' . "\n" .
+    "<script src='//cdn.maestrano.com/apps/mno_libs/mno-loader.js' type='text/javascript'></script>" . "\n" .
+    "<script type='text/javascript'>
+      window.mnoLoader.init('groupoffice','1');
+    </script>" . "\n" .
+    '</body></html>';
+  
+  echo $footer;
 }
 
 function errorMessage($msg){
